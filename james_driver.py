@@ -116,18 +116,19 @@ def main():
     log.info(f"db_port={db_port}")
     log.info(f"db_db={db_db}")
 
-    # # 2. 调用sehll，执行数据爬取
-    # log.info(">>> 2. 调用sehll，执行数据爬取:")
-    # shell_cmd = "cd " + scrapy_dir + " && sh start_spider.sh"
-    #
-    # log.info(f"shell_cmd={shell_cmd}")
-    # shell_ret = os.system(shell_cmd)
-    # log.info(f"shell_ret={shell_ret}")
+    work_date = get_now()
+    csv_file_path = excel_dir + "yqc_spider_" + work_date + ".csv"
+
+    # 2. 调用sehll，执行数据爬取
+    log.info(">>> 2. 调用sehll，执行数据爬取:")
+    shell_cmd = "cd " + scrapy_dir + " && sh start_spider.sh"
+
+    log.info(f"shell_cmd={shell_cmd}")
+    shell_ret = os.system(shell_cmd)
+    log.info(f"shell_ret={shell_ret}")
 
     # 3. 将MySQL中的数据导出到csv文件
     log.info(">>> 3. 将MySQL中的数据导出到csv文件:")
-    work_date = get_now()
-    csv_file_path = excel_dir + "yqc_spider_" + work_date + ".csv"
     log.info(f"csv_file_path={csv_file_path}")
     fetch_yqc_spider_results(db_host, db_port, db_db, db_user, db_passwd, csv_file_path, work_date)
 
