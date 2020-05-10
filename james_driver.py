@@ -119,13 +119,13 @@ def main():
     work_date = get_now()
     csv_file_path = excel_dir + "yqc_spider_" + work_date + ".csv"
 
-    # 2. 调用sehll，执行数据爬取
-    log.info(">>> 2. 调用sehll，执行数据爬取:")
-    shell_cmd = "cd " + scrapy_dir + " && sh start_spider.sh"
-
-    log.info(f"shell_cmd={shell_cmd}")
-    shell_ret = os.system(shell_cmd)
-    log.info(f"shell_ret={shell_ret}")
+    # # 2. 调用sehll，执行数据爬取
+    # log.info(">>> 2. 调用sehll，执行数据爬取:")
+    # shell_cmd = "cd " + scrapy_dir + " && sh start_spider.sh"
+    #
+    # log.info(f"shell_cmd={shell_cmd}")
+    # shell_ret = os.system(shell_cmd)
+    # log.info(f"shell_ret={shell_ret}")
 
     # 3. 将MySQL中的数据导出到csv文件
     log.info(">>> 3. 将MySQL中的数据导出到csv文件:")
