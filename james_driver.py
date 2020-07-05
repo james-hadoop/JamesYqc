@@ -1,4 +1,4 @@
-from james_config.yqc_config import g
+from james_config.yqc_config import g, g_city_map
 import logging as log
 import datetime
 import os
@@ -47,7 +47,7 @@ FROM
              region,
              update_time
       FROM developer.yqc_spider
-      WHERE update_time>'%(work_date)s 00:00:00') t_cont ON t_id.id=t_cont.id) tt
+      WHERE update_time>='%(work_date)s 00:00:00') t_cont ON t_id.id=t_cont.id) tt
 WHERE title IS NOT NULL
 ORDER BY region, key_cnt DESC;""" % {'work_date': work_date}
     log.info(f"sql_select={sql_select}")
@@ -57,6 +57,7 @@ ORDER BY region, key_cnt DESC;""" % {'work_date': work_date}
     df = pd.read_sql_query(sql_select, engine)
     df = df.applymap(lambda x: str(x).strip())
 
+    df['source'] = df['region'].map(lambda x: g_city_map[str(x)])
     log.info(df)
 
     df.to_csv(csv_file_path)
@@ -71,7 +72,7 @@ def get_now(pattern="%Y-%m-%d"):
 def send_email_with_excel(csv_file_path, work_date):
     mail_host = "smtp.163.com"
     mail_user = "jamesqjiang"
-    mail_pass = "jamesqjiang"
+    mail_pass = "jamesqjiang123"
 
     sender = 'jamesqjiang@163.com'
     receivers = ['sysinfo@yuanqucha.com']
@@ -138,4 +139,12 @@ def main():
 
 
 if __name__ == '__main__':
+    pd.set_option('display.max_columns', 1000)
+
+    pd.set_option('display.width', 1000)
+
+    pd.set_option('display.max_colwidth', 1000)
+
+    pd.set_option('display.max_rows', None)
+
     main()
