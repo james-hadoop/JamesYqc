@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
+
 import configobj
 import pymysql
 import os
@@ -21,9 +23,7 @@ def get_user_info():
     #     # for r in pg_rows:
     #     #     print(r)
 
-    engine = create_engine(
-        "postgresql://%s:%s@%s:%s/%s" % (ZCSD_DB_USER, ZCSD_DB_PASSWD, ZCSD_DB_HOST, ZCSD_DB_PORT, ZCSD_DB_DB))
-    df = pd.read_sql_query(sql_select, engine)
+    df = pd.read_sql_query(sql_select, pg_engine)
     return df
 
 
@@ -41,8 +41,8 @@ def get_cont_info():
 def analyze_log(log_file, mysql_table):
     user_df = get_user_info()
     user_df['uid'] = user_df['open_id']
-    print(user_df.head(5))
-    print("-" * 160)
+    # print(user_df.head(5))
+    # print("-" * 160)
 
     cont_df = get_cont_info()
     # print(cont_df)
@@ -50,9 +50,15 @@ def analyze_log(log_file, mysql_table):
 
     log_df = pd.read_csv(log_file, header=None, sep="|", names=["cid", "uid", "pid", "ts", "lat", "lon", "op", "cont"])
     log_df = log_df.dropna(axis=0)
-    log_df['cid'] = log_df['cid'].map(lambda x: str(x))
-    # print(log_df)
-    # print("-" * 160)
+    log_df['cid'] = log_df['cid'].map(lambda x: int(x))
+    log_df['ts_str'] = log_df['ts'].map(lambda x: datetime.fromtimestamp(x).strftime('%Y-%m-%d %H:00:00'))
+    log_df['ts'] = log_df['ts_str'].map(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:00:00'))
+    log_df['lat_str'] = log_df['lat'].map(lambda x: round(x, 1))
+    log_df['lon_str'] = log_df['lon'].map(lambda x: round(x, 1))
+    log_df['op'] = log_df['op'].map(lambda x: str(x))
+    short_log_df = log_df.head(5)
+    print(short_log_df)
+    print("-" * 160)
 
     log_df_in_user_dim = log_df.groupby(['uid']).count()
     # print(log_df['pid']['o_y51wX5ZtN7xF8HH5G7VUQxE_rw'])
@@ -72,14 +78,19 @@ def analyze_log(log_file, mysql_table):
     # print(cont_dim_df)
     # print("-" * 160)
 
-    log_df_in_user_cont_dim = log_df.groupby(['uid', 'cid']).count()
+    log_df_in_user_cont_dim = log_df.groupby(
+        ['uid', 'cid', 'pid', 'ts', 'ts_str', 'lat_str', 'lon_str', 'op']).count().reset_index()
+    # log_df_in_user_cont_dim['cid'] = log_df_in_user_cont_dim['cid'].map(lambda x: int(float(x)))
     print(log_df_in_user_cont_dim)
-    print("-" * 160)
+    # print("-" * 160)
+    # log_json = log_df_in_user_cont_dim.to_json()
+    # print(log_json)
+    # print("-" * 160)
 
-    user_cont_dim_df = pd.merge(log_df_in_user_cont_dim, user_df, on=['uid'],
-                                suffixes=["_l", "_r"])
-    print(user_cont_dim_df)
-    print("-" * 160)
+    # user_cont_dim_df = pd.merge(log_df_in_user_cont_dim, user_df, on=['uid'],
+    #                             suffixes=["_l", "_r"])
+    # print(user_cont_dim_df)
+    # print("-" * 160)
 
     # concat_df = pd.concat(objs=[log_df_in_user_cont_dim, user_df], axis=1, join='outer', join_axes=None, ignore_index=False, keys="uid", levels=None, names=None,
     #                       verify_integrity=False)
@@ -90,6 +101,13 @@ def analyze_log(log_file, mysql_table):
     #                             suffixes=["_l", "_r"])
     # print(user_cont_dim_df)
     # print("-" * 160)
+
+    # 插入mysql数据库
+    # sql_insert = "insert into t_zcsd_user_log (uid, cid, pid, ts,ts_str,lat_str,lon_str,op,cnt) values (%s,%s,%s,%s,%s,%s,%s,%s)" % ()
+    log_df_in_user_cont_dim.to_sql("t_zcsd_user_log2", pg_engine)
+    # test_df = pd.read_sql("jianshu_article",my_engine)
+    # print(test_df)
+
 
 
 def main():
@@ -121,11 +139,17 @@ if __name__ == '__main__':
 
     DB_COR = DB_CONN.cursor()
 
+    my_engine = create_engine(
+        "mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8" % (DB_USER, DB_PASSWD, DB_HOST, DB_PORT, DB_DB))
+
     ZCSD_DB_HOST = CO['ZCSD_DB']['host']
     ZCSD_DB_PORT = CO['ZCSD_DB'].as_int('port')
     ZCSD_DB_DB = CO['ZCSD_DB']['db']
     ZCSD_DB_USER = CO['ZCSD_DB']['user']
     ZCSD_DB_PASSWD = CO['ZCSD_DB']['passwd']
+
+    pg_engine = create_engine(
+        "postgresql://%s:%s@%s:%s/%s" % (ZCSD_DB_USER, ZCSD_DB_PASSWD, ZCSD_DB_HOST, ZCSD_DB_PORT, ZCSD_DB_DB))
 
     # ZCSD_DB_CONN = psycopg2.connect(host=ZCSD_DB_HOST, port=ZCSD_DB_PORT, database=ZCSD_DB_DB,
     #                                 user=ZCSD_DB_USER, password=ZCSD_DB_PASSWD)
