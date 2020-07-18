@@ -39,33 +39,57 @@ def get_cont_info():
 
 
 def analyze_log(log_file, mysql_table):
-    pg_df = get_user_info()
-    cont_df = get_cont_info()
-    print(cont_df)
+    user_df = get_user_info()
+    user_df['uid'] = user_df['open_id']
+    print(user_df.head(5))
     print("-" * 160)
+
+    cont_df = get_cont_info()
+    # print(cont_df)
+    # print("-" * 160)
 
     log_df = pd.read_csv(log_file, header=None, sep="|", names=["cid", "uid", "pid", "ts", "lat", "lon", "op", "cont"])
     log_df = log_df.dropna(axis=0)
     log_df['cid'] = log_df['cid'].map(lambda x: str(x))
-    print(log_df)
-    print("-" * 160)
+    # print(log_df)
+    # print("-" * 160)
 
-    user_df = log_df.groupby(['uid']).count()
+    log_df_in_user_dim = log_df.groupby(['uid']).count()
     # print(log_df['pid']['o_y51wX5ZtN7xF8HH5G7VUQxE_rw'])
 
     # log_df.uid left join pg_df.open_id
-    user_dim_df = user_df.join(pg_df.set_index('open_id'), on='uid', how='left', lsuffix='_l', rsuffix='_r')
-    print(user_dim_df)
+    user_dim_df = log_df_in_user_dim.join(user_df.set_index('open_id'), on='uid', how='left', lsuffix='_l',
+                                          rsuffix='_r')
+    # print(user_dim_df)
+    # print("-" * 160)
+
+    # page_dim_df = log_df.groupby(['pid']).count()
+    # print(page_dim_df)
+    # print("-" * 160)
+
+    log_df_in_cont_dim = log_df.groupby(['cid']).count()
+    cont_dim_df = log_df_in_cont_dim.join(cont_df.set_index('id'), on='uid', how='left', lsuffix='_l', rsuffix='_r')
+    # print(cont_dim_df)
+    # print("-" * 160)
+
+    log_df_in_user_cont_dim = log_df.groupby(['uid', 'cid']).count()
+    print(log_df_in_user_cont_dim)
     print("-" * 160)
 
-    page_dim_df = log_df.groupby(['pid']).count()
-    print(page_dim_df)
+    user_cont_dim_df = pd.merge(log_df_in_user_cont_dim, user_df, on=['uid'],
+                                suffixes=["_l", "_r"])
+    print(user_cont_dim_df)
     print("-" * 160)
 
-    log_df = log_df.groupby(['cid']).count()
-    cont_dim_df = log_df.join(cont_df.set_index('id'), on='uid', how='left', lsuffix='_l', rsuffix='_r')
-    print(cont_dim_df)
-    print("-" * 160)
+    # concat_df = pd.concat(objs=[log_df_in_user_cont_dim, user_df], axis=1, join='outer', join_axes=None, ignore_index=False, keys="uid", levels=None, names=None,
+    #                       verify_integrity=False)
+    # print(cont_df)
+    # print("-" * 160)
+
+    # user_cont_dim_df = pd.merge(user_cont_dim_df, cont_df, left_on='cid', right_on='id', how='left',
+    #                             suffixes=["_l", "_r"])
+    # print(user_cont_dim_df)
+    # print("-" * 160)
 
 
 def main():
