@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import sys
 from datetime import datetime
 
 import configobj
@@ -61,6 +62,7 @@ def analyze_log(log_file, mysql_table):
     print("-" * 160)
 
     log_df_in_user_dim = log_df.groupby(['uid']).count()
+    print(log_df_in_user_dim)
     # print(log_df['pid']['o_y51wX5ZtN7xF8HH5G7VUQxE_rw'])
 
     # log_df.uid left join pg_df.open_id
@@ -104,7 +106,9 @@ def analyze_log(log_file, mysql_table):
 
     # 插入mysql数据库
     # sql_insert = "insert into t_zcsd_user_log (uid, cid, pid, ts,ts_str,lat_str,lon_str,op,cnt) values (%s,%s,%s,%s,%s,%s,%s,%s)" % ()
-    log_df_in_user_cont_dim.to_sql("t_zcsd_user_log2", pg_engine)
+    # log_df_in_user_cont_dim.to_sql("t_zcsd_user_log_detail", pg_engine)
+    # log_df.to_sql("t_zcsd_user_log_detail", pg_engine)
+    log_df.to_csv("/home/james/workspace4py/JamesYqc/_data/t_zcsd_user_log_detail.csv")
     # test_df = pd.read_sql("jianshu_article",my_engine)
     # print(test_df)
 
@@ -157,3 +161,5 @@ if __name__ == '__main__':
     # ZCSD_DB_COR = DB_CONN.cursor()
 
     main()
+
+    sys.exit(0)
