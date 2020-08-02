@@ -1,5 +1,10 @@
+#!flask/bin/python
+# coding=utf-8
+import json
+
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
+from flask_marshmallow import Marshmallow
 
 # # 跨域支持
 # def after_request(resp):
@@ -8,9 +13,10 @@ from flask_sqlalchemy import SQLAlchemy
 #     resp.headers['Access-Control-Allow-Methods'] = 'GET,PUT,POST,DELETE'
 #
 #     return resp
-
+from sqlalchemy import inspect
 
 app = Flask(__name__)
+
 # app.after_request(after_request)
 
 HOSTNAME = '127.0.0.1'
@@ -29,10 +35,22 @@ app.config['SQLALCHEMY_DATABASE_URI'] = DB_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+ma = Marshmallow(app)
 
 
-class ZcsdUserLogSummary(db.Model):
+class Serializer(object):
+
+    def serialize(self):
+        return {c: getattr(self, c) for c in inspect(self).attrs.keys()}
+
+    @staticmethod
+    def serialize_list(l):
+        return [m.serialize() for m in l]
+
+
+class UserLogSummary(db.Model):
     __tablename__ = 't_dwa_zcsd_user_log_summary'
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     uid = db.Column(db.String(50), nullable=False)
     cid = db.Column(db.String(50), nullable=False)
@@ -62,11 +80,36 @@ class ZcsdUserLogSummary(db.Model):
 
         return ret
 
+    # def toJSON(self):
+    #     return json.dumps(self, default=lambda o: o.__dict__,
+    #                       sort_keys=True, indent=4)
+    #
+    # def serialize(self):
+    #     d = Serializer.serialize(self)
+    #     return d
+
+
+# class UserLogSummarySchema(ma.SQLAlchemySchema):
+#     class Meta:
+#         model = UserLogSummary
+#         dump_only = "id"
+#         load_instance = True
+#         include_fk = True
+
 
 # curl http://localhost:18001/ping
-@app.route('/ping', methods=['GET', 'PUT', 'POST', 'DELETE'])
+@app.route('/ping', methods=['GET', 'POST'])
 def ping():
     return dict(code=200, data="pong", size=1)
+
+
+# curl http://localhost:18001/get_all
+@app.route('/get_all', methods=['GET', 'POST'])
+def get_all():
+    items = UserLogSummary.query.all()
+
+
+    return jsonify(json_list = items)
 
 
 if __name__ == '__main__':
