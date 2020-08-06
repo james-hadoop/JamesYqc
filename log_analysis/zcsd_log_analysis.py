@@ -68,7 +68,7 @@ def analyze_log(log_file, mysql_table):
 
 
 def main():
-    log_file = '../_data/yqc_merge_20200803.log'
+    log_file = '../_data/yqc_merge_20200806.log'
     mysql_table = 'sys_user'
 
     analyze_log(log_file, mysql_table)

@@ -12,7 +12,7 @@ from sqlalchemy import create_engine
 
 def distract_user_info_from_pg_to_mysql():
     sql_select = """
-        select open_id,nickname,phone,age,sex,duty from app.sys_user where enabled=1 and is_deleted=0 and open_id is not null and length(open_id)>1
+        select open_id,nickname,phone,age,sex,duty from app.sys_user where enabled=1 and is_deleted=0 and open_id is not null and length(open_id)>1 order by created_time desc
     """
 
     user_info_df = pd.read_sql(sql_select, pg_engine)
