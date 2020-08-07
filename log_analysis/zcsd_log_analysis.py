@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
+import time
 from datetime import datetime
 
 import configobj
@@ -54,9 +55,9 @@ def analyze_log(log_file, mysql_table):
     log_df['cid'] = log_df['cid'].map(lambda x: "_NULL" if str(x).__len__() < 4 else str(x))
     log_df['uid'] = log_df['uid'].map(lambda x: "_NULL" if str(x).__len__() < 4 else str(x))
     log_df['pid'] = log_df['pid'].map(lambda x: "_NULL" if str(x).__len__() < 4 else str(x))
-    log_df['cont'] = log_df['cont'].map(lambda x: "_NULL" if str(x).__len__() < 4 else str(x))
+    log_df['header'] = log_df['cont'].map(lambda x: "_NULL" if str(x).__len__() < 4 else str(x))
     log_df['ts_str'] = log_df['ts'].map(lambda x: datetime.fromtimestamp(x).strftime('%Y-%m-%d %H:00:00'))
-    log_df['ts'] = log_df['ts'].map(lambda x: str(x))
+    log_df['ts'] = log_df['ts'].map(lambda x: datetime.fromtimestamp(x).strftime('%Y-%m-%d %H:%M:%S'))
     log_df['lat_str'] = log_df['lat'].map(lambda x: round(x, 1))
     log_df['lon_str'] = log_df['lon'].map(lambda x: round(x, 1))
     print(log_df.tail(5))
@@ -64,7 +65,7 @@ def analyze_log(log_file, mysql_table):
     print(log_df.describe())
 
     log_df.to_csv("/home/james/workspace4py/JamesYqc/_data/t_zcsd_user_log_detail.csv")
-    log_df.to_sql('t_zcsd_user_log_detail', my_engine, index=False, if_exists="append")
+    log_df.to_sql('t_zcsd_user_log_detail', zcsd_huawei_mysql_engine, index=False, if_exists="replace")
 
 
 def main():
@@ -99,19 +100,15 @@ if __name__ == '__main__':
     my_engine = create_engine(
         "mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8mb4" % (DB_USER, DB_PASSWD, DB_HOST, DB_PORT, DB_DB))
 
-    # ZCSD_DB_HOST = CO['ZCSD_DB']['host']
-    # ZCSD_DB_PORT = CO['ZCSD_DB'].as_int('port')
-    # ZCSD_DB_DB = CO['ZCSD_DB']['db']
-    # ZCSD_DB_USER = CO['ZCSD_DB']['user']
-    # ZCSD_DB_PASSWD = CO['ZCSD_DB']['passwd']
-    #
-    # pg_engine = create_engine(
-    #     "postgresql://%s:%s@%s:%s/%s" % (ZCSD_DB_USER, ZCSD_DB_PASSWD, ZCSD_DB_HOST, ZCSD_DB_PORT, ZCSD_DB_DB))
+    ZCSD_HUAWEI_MYSQL_HOST = CO['ZCSD_HUAWEI_MYSQL_DB']['host']
+    ZCSD_HUAWEI_MYSQL_USER = CO['ZCSD_HUAWEI_MYSQL_DB']['user']
+    ZCSD_HUAWEI_MYSQL_PASSWD = CO['ZCSD_HUAWEI_MYSQL_DB']['passwd']
+    ZCSD_HUAWEI_MYSQL_DB = CO['ZCSD_HUAWEI_MYSQL_DB']['db']
+    ZCSD_HUAWEI_MYSQL_PORT = CO['ZCSD_HUAWEI_MYSQL_DB'].as_int('port')
 
-    # ZCSD_DB_CONN = psycopg2.connect(host=ZCSD_DB_HOST, port=ZCSD_DB_PORT, database=ZCSD_DB_DB,
-    #                                 user=ZCSD_DB_USER, password=ZCSD_DB_PASSWD)
-    #
-    # ZCSD_DB_COR = DB_CONN.cursor()
+    zcsd_huawei_mysql_engine = create_engine(
+        "mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8mb4" % (ZCSD_HUAWEI_MYSQL_USER, ZCSD_HUAWEI_MYSQL_PASSWD, ZCSD_HUAWEI_MYSQL_HOST, ZCSD_HUAWEI_MYSQL_PORT, ZCSD_HUAWEI_MYSQL_DB))
+
 
     main()
 

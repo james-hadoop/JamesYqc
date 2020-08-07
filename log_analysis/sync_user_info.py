@@ -19,7 +19,7 @@ def distract_user_info_from_pg_to_mysql():
     print(user_info_df)
     user_info_df['nickname'] = user_info_df['nickname'].map(lambda x: str(x).encode("utf8"))
     print(user_info_df)
-    user_info_df.to_sql('t_zcsd_user_info', my_engine, index=False, if_exists="append")
+    user_info_df.to_sql('sys_user', zcsd_huawei_mysql_engine, index=False, if_exists="replace")
 
 
 def main():
@@ -35,21 +35,15 @@ if __name__ == '__main__':
     config_path = os.getcwd() + '/../james_config/zcsd.conf'
     CO = configobj.ConfigObj(config_path)
 
-    DB_HOST = CO['LOCAL_DB']['host']
-    DB_USER = CO['LOCAL_DB']['user']
-    DB_PASSWD = CO['LOCAL_DB']['passwd']
-    DB_DB = CO['LOCAL_DB']['db']
-    DB_PORT = CO['LOCAL_DB'].as_int('port')
+    ZCSD_HUAWEI_MYSQL_HOST = CO['ZCSD_HUAWEI_MYSQL_DB']['host']
+    ZCSD_HUAWEI_MYSQL_USER = CO['ZCSD_HUAWEI_MYSQL_DB']['user']
+    ZCSD_HUAWEI_MYSQL_PASSWD = CO['ZCSD_HUAWEI_MYSQL_DB']['passwd']
+    ZCSD_HUAWEI_MYSQL_DB = CO['ZCSD_HUAWEI_MYSQL_DB']['db']
+    ZCSD_HUAWEI_MYSQL_PORT = CO['ZCSD_HUAWEI_MYSQL_DB'].as_int('port')
 
-    DB_CONN = pymysql.connect(host=DB_HOST, user=DB_USER, passwd=DB_PASSWD,
-                              db=DB_DB,
-                              port=DB_PORT,
-                              charset='utf8mb4')
+    zcsd_huawei_mysql_engine = create_engine(
+        "mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8mb4" % (ZCSD_HUAWEI_MYSQL_USER, ZCSD_HUAWEI_MYSQL_PASSWD, ZCSD_HUAWEI_MYSQL_HOST, ZCSD_HUAWEI_MYSQL_PORT, ZCSD_HUAWEI_MYSQL_DB))
 
-    DB_COR = DB_CONN.cursor()
-
-    my_engine = create_engine(
-        "mysql+mysqlconnector://%s:%s@%s:%s/%s" % (DB_USER, DB_PASSWD, DB_HOST, DB_PORT, DB_DB))
 
     ZCSD_DB_HOST = CO['ZCSD_DB']['host']
     ZCSD_DB_PORT = CO['ZCSD_DB'].as_int('port')

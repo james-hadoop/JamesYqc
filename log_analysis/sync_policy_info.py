@@ -10,19 +10,19 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 
-def generate_user_behavior_summary():
+def sync_policy_info():
     sql_select = """
-        SELECT t_log_u.*, header, label_industry_ids, label_place_ids FROM ( SELECT t_log.*, nickname, phone, age, sex , duty FROM ( SELECT uid, cid, pid, timestamp(ts) AS ts, ts_str , lat_str, lon_str, op, COUNT(op) AS cnt FROM t_zcsd_user_log_detail GROUP BY uid, cid, pid, ts, ts_str, lat_str, lon_str, op ) t_log LEFT JOIN ( SELECT open_id, nickname, phone, age, sex , duty FROM sys_user ) t_u ON t_log.uid = t_u.open_id ) t_log_u LEFT JOIN ( SELECT id, header, label_industry_ids, label_place_ids FROM policy WHERE (enabled = 1 AND id IS NOT NULL AND header IS NOT NULL) ) t_c ON t_log_u.cid = t_c.id
-        """
+        SELECT ordinal, enabled, created_time, created_by, updated_time, updated_by, deleted_time, deleted_by, is_deleted, id, code, "name", "header", "content", hits, picture, handpick, is_headlines, label_industry_ids, label_place_ids, "source"
+FROM app.policy
+    """
 
-    log_df = pd.read_sql(sql_select, zcsd_huawei_mysql_engine)
-    print(log_df.head(5))
+    user_info_df = pd.read_sql(sql_select, pg_engine)
 
-    log_df.to_sql('t_zcsd_user_behavior_summay', zcsd_huawei_mysql_engine, index=False, if_exists="replace")
+    user_info_df.to_sql('policy', zcsd_huawei_mysql_engine, index=False, if_exists="append")
 
 
 def main():
-    generate_user_behavior_summary()
+    sync_policy_info()
 
 
 if __name__ == '__main__':
@@ -42,6 +42,16 @@ if __name__ == '__main__':
 
     zcsd_huawei_mysql_engine = create_engine(
         "mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8mb4" % (ZCSD_HUAWEI_MYSQL_USER, ZCSD_HUAWEI_MYSQL_PASSWD, ZCSD_HUAWEI_MYSQL_HOST, ZCSD_HUAWEI_MYSQL_PORT, ZCSD_HUAWEI_MYSQL_DB))
+
+
+    ZCSD_DB_HOST = CO['ZCSD_DB']['host']
+    ZCSD_DB_PORT = CO['ZCSD_DB'].as_int('port')
+    ZCSD_DB_DB = CO['ZCSD_DB']['db']
+    ZCSD_DB_USER = CO['ZCSD_DB']['user']
+    ZCSD_DB_PASSWD = CO['ZCSD_DB']['passwd']
+
+    pg_engine = create_engine(
+        "postgresql://%s:%s@%s:%s/%s" % (ZCSD_DB_USER, ZCSD_DB_PASSWD, ZCSD_DB_HOST, ZCSD_DB_PORT, ZCSD_DB_DB))
 
     main()
 
