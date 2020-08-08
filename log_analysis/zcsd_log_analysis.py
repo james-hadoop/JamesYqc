@@ -65,11 +65,11 @@ def analyze_log(log_file, mysql_table):
     print(log_df.describe())
 
     log_df.to_csv("/home/james/workspace4py/JamesYqc/_data/t_zcsd_user_log_detail.csv")
-    log_df.to_sql('t_zcsd_user_log_detail', zcsd_huawei_mysql_engine, index=False, if_exists="replace")
+    log_df.to_sql('t_zcsd_user_log_detail', zcsd_huawei_mysql_engine, index=False, if_exists="append")
 
 
 def main():
-    log_file = '../_data/yqc_merge_20200806.log'
+    log_file = '../_data/yqc_merge.log'
     mysql_table = 'sys_user'
 
     analyze_log(log_file, mysql_table)

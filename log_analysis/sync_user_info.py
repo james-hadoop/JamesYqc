@@ -19,7 +19,7 @@ def distract_user_info_from_pg_to_mysql():
     print(user_info_df)
     user_info_df['nickname'] = user_info_df['nickname'].map(lambda x: str(x).encode("utf8"))
     print(user_info_df)
-    user_info_df.to_sql('sys_user', zcsd_huawei_mysql_engine, index=False, if_exists="replace")
+    user_info_df.to_sql('sys_user', zcsd_huawei_mysql_engine, index=False, if_exists="append")
 
 
 def main():

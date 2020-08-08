@@ -13,10 +13,11 @@ from sqlalchemy import create_engine
 def sync_policy_elucidation():
     sql_select = """
         SELECT ordinal, enabled, created_time, created_by, updated_time, updated_by, deleted_time, deleted_by, is_deleted, id, code, "name", "header", "content", hits, picture, policy_id, handpick, is_headlines, label_industry_ids, label_place_ids, "source"
-FROM app.policy_elucidation
+FROM app.policy_elucidation where created_time>='2020-08-07 00:00:00'
     """
 
     user_info_df = pd.read_sql(sql_select, pg_engine)
+    print(user_info_df)
 
     user_info_df.to_sql('policy_elucidation', zcsd_huawei_mysql_engine, index=False, if_exists="append")
 
