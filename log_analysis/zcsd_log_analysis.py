@@ -63,13 +63,12 @@ def analyze_log(log_file, mysql_table):
     print(log_df.tail(5))
     print("-" * 160)
     print(log_df.describe())
-
-    log_df.to_csv("/home/james/workspace4py/JamesYqc/_data/t_zcsd_user_log_detail.csv")
+    
     log_df.to_sql('t_zcsd_user_log_detail', zcsd_huawei_mysql_engine, index=False, if_exists="append")
 
 
 def main():
-    log_file = '../_data/yqc_merge.log'
+    log_file = os.getcwd() + '/_data/yqc_merge.log'
     mysql_table = 'sys_user'
 
     analyze_log(log_file, mysql_table)
@@ -81,24 +80,24 @@ if __name__ == '__main__':
     pd.set_option('display.max_colwidth', 1000)
     pd.set_option('display.max_rows', None)
 
-    config_path = os.getcwd() + '/../james_config/zcsd.conf'
+    config_path = os.getcwd() + '/james_config/zcsd.conf'
     CO = configobj.ConfigObj(config_path)
 
-    DB_HOST = CO['LOCAL_DB']['host']
-    DB_USER = CO['LOCAL_DB']['user']
-    DB_PASSWD = CO['LOCAL_DB']['passwd']
-    DB_DB = CO['LOCAL_DB']['db']
-    DB_PORT = CO['LOCAL_DB'].as_int('port')
+    # DB_HOST = CO['LOCAL_DB']['host']
+    # DB_USER = CO['LOCAL_DB']['user']
+    # DB_PASSWD = CO['LOCAL_DB']['passwd']
+    # DB_DB = CO['LOCAL_DB']['db']
+    # DB_PORT = CO['LOCAL_DB'].as_int('port')
 
-    DB_CONN = pymysql.connect(host=DB_HOST, user=DB_USER, passwd=DB_PASSWD,
-                              db=DB_DB,
-                              port=DB_PORT,
-                              charset='utf8mb4')
+    # DB_CONN = pymysql.connect(host=DB_HOST, user=DB_USER, passwd=DB_PASSWD,
+    #                           db=DB_DB,
+    #                           port=DB_PORT,
+    #                           charset='utf8mb4')
 
-    DB_COR = DB_CONN.cursor()
+    # DB_COR = DB_CONN.cursor()
 
-    my_engine = create_engine(
-        "mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8mb4" % (DB_USER, DB_PASSWD, DB_HOST, DB_PORT, DB_DB))
+    # my_engine = create_engine(
+    #     "mysql+pymysql://%s:%s@%s:%s/%s?charset=utf8mb4" % (DB_USER, DB_PASSWD, DB_HOST, DB_PORT, DB_DB))
 
     ZCSD_HUAWEI_MYSQL_HOST = CO['ZCSD_HUAWEI_MYSQL_DB']['host']
     ZCSD_HUAWEI_MYSQL_USER = CO['ZCSD_HUAWEI_MYSQL_DB']['user']

@@ -31,7 +31,7 @@ if __name__ == '__main__':
     pd.set_option('display.max_colwidth', 1000)
     pd.set_option('display.max_rows', None)
 
-    config_path = os.getcwd() + '/../james_config/zcsd.conf'
+    config_path = os.getcwd() + '/james_config/zcsd.conf'
     CO = configobj.ConfigObj(config_path)
 
     ZCSD_HUAWEI_MYSQL_HOST = CO['ZCSD_HUAWEI_MYSQL_DB']['host']
